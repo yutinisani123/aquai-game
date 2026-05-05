@@ -18,16 +18,16 @@ const GAME_CONFIG = {
   MINING_OUTER_RADIUS: 4480,
 };
 
-// 🟦 AQUAI Smart Contract Addresses (BASE MAINNET)
+// 🟦 AQUAI Smart Contract Addresses (BASE MAINNET V2)
 const CONTRACTS = {
   base: {
-    AquaiToken: "0xA0FD95Daf8049298cFfd87873bCEB93fdeBa61FD",
-    AquaiAgent: "0x0ccB22C8b17F3914C0F402972e4FeAED2fCe5E6b",
+    AquaiToken: "0x0000000000000000000000000000000000000000", // PENDING - Deploy via Clanker
+    AquaiAgent: "0x9a8f9B5fB2360F100c81d218BA427C6F42767b1B", // V2 - Accepts ETH or AQUAI tokens
     AquaiGame: "0xa5541b26aE81325B322A895323634a288fD90B89"
   }
 };
 
-console.log('🌊 AQUAI Contracts Loaded (BASE MAINNET):', CONTRACTS);
+console.log('🌊 AQUAI Contracts Loaded (BASE MAINNET V2):', CONTRACTS);
 
 // Stat ranges for random generation
 const STAT_RANGES = {
