@@ -36,6 +36,28 @@ const GAME_ABI = [
 ];
 
 /**
+ * Safely get token balance (returns 0 if not available)
+ */
+async function safeGetTokenBalance() {
+  if (!tokenContract || !gameState.wallet) {
+    return 0;
+  }
+  
+  const tokenAddress = CONTRACTS.base.AquaiToken;
+  if (!tokenAddress || tokenAddress === ethers.ZeroAddress) {
+    return 0;
+  }
+  
+  try {
+    const balance = await tokenContract.balanceOf(gameState.wallet);
+    return parseFloat(ethers.formatUnits(balance, 18));
+  } catch (error) {
+    console.warn('⚠️ Could not get token balance:', error.message);
+    return 0;
+  }
+}
+
+/**
  * Connect MetaMask wallet
  */
 async function connectWalletReal() {
@@ -73,20 +95,8 @@ async function connectWalletReal() {
     const balance = await provider.getBalance(signer.getAddress());
     gameState.balance.eth = parseFloat(ethers.formatEther(balance));
     
-    // Get token balance (only if token contract is deployed)
-    if (tokenContract && CONTRACTS.base.AquaiToken !== "0x0000000000000000000000000000000000000000") {
-      try {
-        const tokenBalance = await tokenContract.balanceOf(gameState.wallet);
-        gameState.balance.tokens = parseFloat(ethers.formatUnits(tokenBalance, 18));
-        console.log('💰 Token balance:', gameState.balance.tokens);
-      } catch (error) {
-        console.warn('⚠️ Could not get token balance (token may not be deployed yet)');
-        gameState.balance.tokens = 0;
-      }
-    } else {
-      gameState.balance.tokens = 0;
-      console.log('ℹ️ Token contract not set - token balance: 0');
-    }
+    // Get token balance using safe function
+    gameState.balance.tokens = await safeGetTokenBalance();
     
     // Update UI
     updateUI();
