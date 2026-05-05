@@ -73,15 +73,19 @@ async function connectWalletReal() {
     const balance = await provider.getBalance(signer.getAddress());
     gameState.balance.eth = parseFloat(ethers.formatEther(balance));
     
-    // Get token balance (optional - might fail if token not deployed yet)
-    if (tokenContract) {
+    // Get token balance (only if token contract is deployed)
+    if (tokenContract && CONTRACTS.base.AquaiToken !== "0x0000000000000000000000000000000000000000") {
       try {
         const tokenBalance = await tokenContract.balanceOf(gameState.wallet);
         gameState.balance.tokens = parseFloat(ethers.formatUnits(tokenBalance, 18));
+        console.log('💰 Token balance:', gameState.balance.tokens);
       } catch (error) {
-        console.log('⚠️ Token contract not ready yet, skipping token balance');
+        console.warn('⚠️ Could not get token balance (token may not be deployed yet)');
         gameState.balance.tokens = 0;
       }
+    } else {
+      gameState.balance.tokens = 0;
+      console.log('ℹ️ Token contract not set - token balance: 0');
     }
     
     // Update UI
@@ -115,15 +119,22 @@ async function loadContracts() {
     );
     
     // Only load token contract if address is set (not zero address)
-    if (CONTRACTS.base.AquaiToken && CONTRACTS.base.AquaiToken !== "0x0000000000000000000000000000000000000000") {
-      tokenContract = new ethers.Contract(
-        CONTRACTS.base.AquaiToken,
-        TOKEN_ABI,
-        signer
-      );
-      console.log('✅ Token contract loaded:', CONTRACTS.base.AquaiToken);
+    const tokenAddress = CONTRACTS.base.AquaiToken;
+    if (tokenAddress && tokenAddress !== "0x0000000000000000000000000000000000000000" && tokenAddress !== ethers.ZeroAddress) {
+      try {
+        tokenContract = new ethers.Contract(
+          tokenAddress,
+          TOKEN_ABI,
+          signer
+        );
+        console.log('✅ Token contract loaded:', tokenAddress);
+      } catch (error) {
+        console.warn('⚠️ Failed to load token contract:', error.message);
+        tokenContract = null;
+      }
     } else {
-      console.log('⚠️ Token contract not set yet (deploy via Clanker first)');
+      console.log('ℹ️ Token contract not set (deploy via Clanker first)');
+      tokenContract = null;
     }
     
     gameContract = new ethers.Contract(
@@ -134,7 +145,7 @@ async function loadContracts() {
     
     console.log('✅ Contracts loaded!');
     console.log('  Agent:', CONTRACTS.base.AquaiAgent);
-    console.log('  Token:', CONTRACTS.base.AquaiToken || 'Not set');
+    console.log('  Token:', tokenContract ? CONTRACTS.base.AquaiToken : 'Not set');
     console.log('  Game:', CONTRACTS.base.AquaiGame);
     
     // Listen for events
