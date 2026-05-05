@@ -135,9 +135,6 @@ function initGame() {
   // Setup keyboard controls
   setupKeyboardControls();
   
-  // Start game loop
-  startGameLoop(ctx);
-  
   console.log('Game initialized!');
 
   // Generate tiles
@@ -207,8 +204,9 @@ function initGame() {
     requestAnimationFrame(animate);
   }
 
+  // Start animation
   animate();
-
+  
   // Initialize minimap
   initMinimap();
 
