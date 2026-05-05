@@ -610,15 +610,25 @@ function drawUIOverlays(ctx) {
 
 // Setup event listeners
 function setupEventListeners() {
+  console.log('🔧 Setting up event listeners...');
+  
   // Connect wallet button
   const connectBtn = document.getElementById('connectWalletBtn');
-  connectBtn.addEventListener('click', () => {
-    if (gameState.isConnected) {
-      disconnectWallet();
-    } else {
-      connectWallet();
-    }
-  });
+  if (connectBtn) {
+    console.log('✅ Connect button found');
+    connectBtn.addEventListener('click', () => {
+      console.log('🔘 Connect button clicked!');
+      if (gameState.isConnected) {
+        console.log('Disconnecting wallet...');
+        disconnectWallet();
+      } else {
+        console.log('Connecting wallet...');
+        connectWallet();
+      }
+    });
+  } else {
+    console.error('❌ Connect button NOT found!');
+  }
 
   // Mint agent buttons
   const mintBtn = document.getElementById('mintAgentBtn');
@@ -806,11 +816,19 @@ function setActivePanel(panel) {
 }
 
 function updateUI() {
+  console.log('🔄 Updating UI, connected:', gameState.isConnected);
+  
   // Update wallet button
   const connectBtn = document.getElementById('connectWalletBtn');
   const connectBtnText = document.getElementById('connectBtnText');
   
+  if (!connectBtn) {
+    console.error('❌ connectWalletBtn not found in updateUI!');
+    return;
+  }
+  
   if (gameState.isConnected) {
+    console.log('✅ Wallet connected, updating button');
     connectBtn.classList.add('connected');
     connectBtnText.textContent = gameState.wallet.slice(0, 6) + '...' + gameState.wallet.slice(-4);
     document.getElementById('walletInfo').style.display = 'flex';
