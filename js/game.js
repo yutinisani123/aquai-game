@@ -218,23 +218,9 @@ function initGame() {
   // Update UI
   updateUI();
   
-  // Auto-connect wallet for easier testing
-  setTimeout(() => {
-    if (!gameState.isConnected) {
-      console.log('Auto-connecting wallet for demo...');
-      connectWallet();
-    }
-  }, 500);
-  
-  // Show welcome message with controls
-  setTimeout(() => {
-    alert('🌊 Welcome to AQUAI!\n\n' +
-          '⌨️ Controls:\n' +
-          'WASD / Arrows - Move\n' +
-          'SPACE - Attack\n' +
-          'M - Mine Tokens\n\n' +
-          'Mine tokens di lingkaran hijau!');
-  }, 1000);
+  // Auto-connect wallet immediately (no alert blocking)
+  console.log('Auto-connecting wallet for demo...');
+  connectWallet();
 }
 
 // Setup keyboard controls for movement and combat
@@ -688,17 +674,52 @@ function setupEventListeners() {
 
 // Wallet functions
 function connectWallet() {
+  if (gameState.isConnected) {
+    console.log('Wallet already connected');
+    return;
+  }
+  
   // Mock connection - instant!
   gameState.isConnected = true;
   gameState.wallet = '0x' + Array(40).fill(0).map(() => 
     Math.floor(Math.random() * 16).toString(16)
   ).join('');
   
-  console.log('Wallet connected:', gameState.wallet);
+  console.log('✅ Wallet connected:', gameState.wallet);
+  
+  // Update UI
   updateUI();
   
-  // Show success message
-  alert('✅ Wallet Connected!\n\n' + gameState.wallet.slice(0, 10) + '...');
+  // Show subtle notification instead of blocking alert
+  showNotification('✅ Wallet Connected!');
+}
+
+function showNotification(message) {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #00ff88, #00cc66);
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
+    animation: slideIn 0.3s ease-out;
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.3s';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
 }
 
 function disconnectWallet() {
