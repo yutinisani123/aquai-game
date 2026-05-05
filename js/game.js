@@ -18,16 +18,16 @@ const GAME_CONFIG = {
   MINING_OUTER_RADIUS: 4480,
 };
 
-// 🟦 AQUAI Smart Contract Addresses (Base Sepolia)
+// 🟦 AQUAI Smart Contract Addresses (BASE MAINNET)
 const CONTRACTS = {
-  baseSepolia: {
-    AquaiToken: "0x97fA542Fc8B6797e98d40b0c5730B6FdC97D9d95",
-    AquaiAgent: "0x9D8daE7df9ef5865ddC99Aa976c72d3E59B172B2",
-    AquaiGame: "0x30127E12C14bAe9ec4f059f3CAae03E81803BB40"
+  base: {
+    AquaiToken: "0xA0FD95Daf8049298cFfd87873bCEB93fdeBa61FD",
+    AquaiAgent: "0x0ccB22C8b17F3914C0F402972e4FeAED2fCe5E6b",
+    AquaiGame: "0xa5541b26aE81325B322A895323634a288fD90B89"
   }
 };
 
-console.log('🌊 AQUAI Contracts Loaded:', CONTRACTS);
+console.log('🌊 AQUAI Contracts Loaded (BASE MAINNET):', CONTRACTS);
 
 // Stat ranges for random generation
 const STAT_RANGES = {
@@ -216,9 +216,8 @@ function initGame() {
   // Update UI
   updateUI();
   
-  // Auto-connect wallet immediately (no alert blocking)
-  console.log('Auto-connecting wallet for demo...');
-  connectWallet();
+  // DON'T auto-connect - user must click button for MetaMask
+  console.log('🌊 AQUAI loaded - Click "Connect Wallet" to start');
 }
 
 // Setup keyboard controls for movement and combat
@@ -680,61 +679,13 @@ function setupEventListeners() {
   });
 }
 
-// Wallet functions
-function connectWallet() {
-  if (gameState.isConnected) {
-    console.log('Wallet already connected');
-    return;
-  }
-  
-  // Mock connection - instant!
-  gameState.isConnected = true;
-  gameState.wallet = '0x' + Array(40).fill(0).map(() => 
-    Math.floor(Math.random() * 16).toString(16)
-  ).join('');
-  
-  console.log('✅ Wallet connected:', gameState.wallet);
-  
-  // Update UI
-  updateUI();
-  
-  // Show subtle notification instead of blocking alert
-  showNotification('✅ Wallet Connected!');
-}
-
-function showNotification(message) {
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: linear-gradient(135deg, #00ff88, #00cc66);
-    color: #000;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    z-index: 10000;
-    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
-    animation: slideIn 0.3s ease-out;
-  `;
-  notification.textContent = message;
-  document.body.appendChild(notification);
-  
-  // Remove after 3 seconds
-  setTimeout(() => {
-    notification.style.opacity = '0';
-    notification.style.transition = 'opacity 0.3s';
-    setTimeout(() => notification.remove(), 300);
-  }, 3000);
+// Wallet functions - Use REAL Web3
+async function connectWallet() {
+  await connectWalletReal();
 }
 
 function disconnectWallet() {
-  gameState.isConnected = false;
-  gameState.wallet = null;
-  gameState.balance = { eth: 0, tokens: 0 };
-  updateUI();
+  disconnectWalletReal();
 }
 
 // Mint functions
@@ -755,7 +706,7 @@ function closeMintModal() {
   hideError();
 }
 
-function handleMint() {
+async function handleMint() {
   if (gameState.isMinting || !gameState.isConnected) return;
 
   const nameInput = document.getElementById('agentNameInput');
@@ -772,34 +723,39 @@ function handleMint() {
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin">
       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
     </svg>
-    Minting...
+    Minting on-chain...
   `;
 
-  // Simulate minting
-  setTimeout(() => {
-    const newAgent = {
-      id: gameState.agents.length + 1,
-      name: agentName,
-      stats: generateAgentStats(),
-      mintedAt: Date.now(),
-      level: 1,
-      position: { x: GAME_CONFIG.MINING_CENTER, y: GAME_CONFIG.MINING_CENTER },
-    };
-
-    gameState.agents.push(newAgent);
-    gameState.selectedAgent = newAgent.id;
-    gameState.mintedCount++;
-    gameState.freeMintsRemaining = Math.max(0, gameState.freeMintsRemaining - 1);
+  try {
+    // Call REAL mint function
+    const newAgent = await mintAgentReal(agentName);
+    
+    console.log('✅ Agent minted:', newAgent);
+    
     gameState.isMinting = false;
-
-    if (cost === 0) {
-      gameState.balance.tokens -= GAME_CONFIG.PAID_MINT_BURN;
-    }
-
+    document.getElementById('mintAgentBtn2').innerHTML = `
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2v20M2 12h20" />
+      </svg>
+      Mint Agent
+    `;
+    
     updateUI();
     closeMintModal();
     drawMinimap();
-  }, 2000);
+    updateAgentList();
+    
+  } catch (error) {
+    console.error('❌ Mint failed:', error);
+    gameState.isMinting = false;
+    document.getElementById('mintAgentBtn2').innerHTML = `
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2v20M2 12h20" />
+      </svg>
+      Mint Agent
+    `;
+    showError('Mint failed: ' + error.message);
+  }
 }
 
 // UI functions
