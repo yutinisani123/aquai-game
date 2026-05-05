@@ -688,6 +688,33 @@ function disconnectWallet() {
   disconnectWalletReal();
 }
 
+// Notification helper (used by web3.js)
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #00ff88, #00cc66);
+    color: #000;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4);
+    animation: slideIn 0.3s ease-out;
+  `;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.3s';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
 // Mint functions
 function openMintModal() {
   if (!gameState.isConnected) {
