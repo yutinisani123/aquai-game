@@ -21,7 +21,7 @@ const GAME_CONFIG = {
 // 🟦 AQUAI Smart Contract Addresses (BASE MAINNET V2)
 const CONTRACTS = {
   base: {
-    AquaiToken: "0x0000000000000000000000000000000000000000", // PENDING - Deploy via Clanker
+    AquaiToken: "0xd1a390606b94fb6d8C981c8624aF13E3aFeCbb07", // AQUAI Token (Clanker)
     AquaiAgent: "0x9a8f9B5fB2360F100c81d218BA427C6F42767b1B", // V2 - Accepts ETH or AQUAI tokens
     AquaiGame: "0xa5541b26aE81325B322A895323634a288fD90B89"
   }
